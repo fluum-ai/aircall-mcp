@@ -10,7 +10,7 @@ A local, read-only [Model Context Protocol](https://modelcontextprotocol.io) ser
 Aircall provides an official REST API but does not provide a client-facing MCP server for reading calls and transcripts. `aircall-mcp` provides that MCP layer while keeping credentials and Aircall data on the local machine:
 
 - **Read-only by construction:** only documented `GET` endpoints are implemented.
-- **Local stdio transport:** no web server, hosted proxy, account, or subscription.
+- **Local stdio by default:** no listening port unless you opt into HTTP for Docker or Coolify.
 - **Fixed API origin:** credentials are sent only to `https://api.aircall.io`.
 - **No persistence:** responses, transcripts, and contacts are not written to disk.
 - **Bounded output:** pagination, compact call results, and transcript slicing limit context usage.
@@ -109,6 +109,39 @@ Then add this server to `~/.config/mcp/mcp.json`:
 ```
 
 Reload Pi, then connect or call `aircall_ping`.
+
+## Docker / Coolify
+
+The container listens for MCP Streamable HTTP on port `8000`. `GET /health` is unauthenticated so Coolify can probe it. The MCP endpoint is `/mcp`.
+
+Set these environment variables in Coolify (or a `.env` next to `docker-compose.yml`):
+
+```bash
+AIRCALL_API_ID=
+AIRCALL_API_TOKEN=
+MCP_AUTH_TOKEN=
+```
+
+`MCP_AUTH_TOKEN` is a bearer token for `/mcp`. Set it before publishing the service.
+
+Deploy with Coolify's Docker Compose resource so the existing `coolify` network alias is used. The public MCP URL is `https://<your-domain>/mcp`.
+
+Configure an MCP client with that URL:
+
+```json
+{
+  "mcpServers": {
+    "aircall": {
+      "url": "https://<your-domain>/mcp",
+      "headers": {
+        "Authorization": "Bearer <MCP_AUTH_TOKEN>"
+      }
+    }
+  }
+}
+```
+
+If Traefik buffers or times out long-lived SSE streams, set `MCP_JSON_RESPONSE=true`.
 
 ## Aircall API constraints
 

@@ -2,9 +2,10 @@
 
 ## Security model
 
-`aircall-mcp` is deliberately local and read-only:
+`aircall-mcp` is deliberately read-only:
 
-- It uses MCP over stdio; it does not open a listening port.
+- The default transport is MCP over stdio and does not open a listening port.
+- HTTP mode (`MCP_TRANSPORT=http`) is for Docker/Coolify. Protect `/mcp` with `MCP_AUTH_TOKEN` or an equivalent reverse-proxy authentication layer before exposing it.
 - It sends requests only to `https://api.aircall.io`.
 - It implements documented `GET` endpoints only.
 - It does not persist Aircall responses, call metadata, transcripts, or contacts.
@@ -15,7 +16,7 @@ Aircall data can contain personal information and confidential conversations. Th
 
 ## Credentials
 
-Provide credentials through `AIRCALL_API_ID` and `AIRCALL_API_TOKEN`. Do not put real credentials in source control or a shared MCP configuration file. Prefer an operating-system credential store. See the macOS Keychain setup in the README.
+Provide credentials through `AIRCALL_API_ID` and `AIRCALL_API_TOKEN`. For HTTP deployments, also set `MCP_AUTH_TOKEN`. Do not put real credentials in source control or a shared MCP configuration file. Prefer an operating-system credential store. See the macOS Keychain setup in the README.
 
 ## Reporting a vulnerability
 
